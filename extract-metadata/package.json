@@ -1,0 +1,15 @@
+{
+  "name": "extract-metadata",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "predeploy": "zip -r Lambda-Deployment.zip * -x *.zip *.json *.log",
+    "deploy": "aws lambda update-function-code --function-name arn:aws:lambda:ap-northeast-1:536772866969:function:extract-metadata --zip-file fileb://Lambda-Deployment.zip --profile study-lambda"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "aws-sdk": "^2.353.0"
+  }
+}

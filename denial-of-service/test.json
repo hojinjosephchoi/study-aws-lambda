@@ -1,0 +1,8 @@
+{
+  "options": {
+    "hostname": "3po6xz8ri2.execute-api.ap-northeast-1.amazonaws.com",
+    "path": "/dev/videos",
+    "method": "GET"
+  },
+  "data": ""
+}

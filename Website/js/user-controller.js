@@ -16,7 +16,8 @@ var userController = {
     logoutButton: null,
     profileButton: null,
     profileNameLabel: null,
-    profileImage: null
+    profileImage: null,
+    uploadButton: null
   },
   init: function (config) {
     var that = this;
@@ -26,6 +27,7 @@ var userController = {
     this.uiElements.profileButton = $('#user-profile');
     this.uiElements.profileNameLabel = $('#profilename');
     this.uiElements.profileImage = $('#profilepicture');
+    this.uiElements.uploadButton = $('#upload-video-button');
 
     this.data.config = config;
     this.data.auth0Lock = new Auth0Lock(config.auth0.clientId, config.auth0.domain, {
@@ -63,6 +65,7 @@ var userController = {
     if (showAuthenticationElements) {
       this.uiElements.profileNameLabel.text(profile.nickname);
       this.uiElements.profileImage.attr('src', profile.picture);
+      this.uiElements.uploadButton.css('display', 'inline-block');
     }
 
     this.uiElements.loginButton.toggle(!showAuthenticationElements);
@@ -114,6 +117,7 @@ var userController = {
 
       that.uiElements.logoutButton.hide();
       that.uiElements.profileButton.hide();
+      that.uiElements.uploadButton.hide();
       that.uiElements.loginButton.show();
     });
 

@@ -1,0 +1,26 @@
+{
+  "name": "user-profile",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "create": "aws lambda create-function --function-name get-signed-url --handler index.handler --memory-size 128 --timeout 3 --runtime nodejs8.10 --role arn:aws:iam::536772866969:role/lambda-s3-execution-role --publish --zip-file fileb://Lambda-Deployment.zip --profile study-lambda",
+    "precreate": "npm run predeploy",
+    "predeploy": "zip -r Lambda-Deployment.zip * -x *.zip *.json *.log",
+    "deploy": "aws lambda update-function-code --function-name get-signed-url --zip-file fileb://Lambda-Deployment.zip --profile study-lambda",
+    "test": "BASE_URL=https://s3.amazonaws.com BUCKET=serverless-video-transcoded-hojin mocha --exit ./test/*.js",
+    "test:debug": "npm run test  -- --inspect-brk=30000"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "async": "^2.6.1"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.361.0",
+    "chai": "^4.2.0",
+    "mocha": "^5.2.0",
+    "rewire": "^4.0.1",
+    "sinon": "^7.1.1"
+  }
+}

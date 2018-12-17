@@ -2,71 +2,71 @@
  * Created by Peter Sbarski
  * Serverless Architectures on AWS
  * http://book.acloud.guru/
- * Last Updated: Feb 11, 2017
+ * Last Updated: Feb 12, 2017
  */
 
 'use strict';
+
 var AWS = require('aws-sdk');
-var s3 = new AWS.S3({
-  region: 'ap-northeast-1',
-});
+var admin = require('firebase-admin');
 
 var elasticTranscoder = new AWS.ElasticTranscoder({
-  region: 'ap-northeast-1'
+  region: process.env.ELASTIC_TRANSCODER_REGION
 });
 
+admin.initializeApp({
+  credential: admin.credential.cert(process.env.SERVICE_ACCOUNT),
+  databaseURL: process.env.DATABASE_URL
+});
+
+function pushVideoEntryToFirebase(key, callback) {
+  console.log('Adding video entry to firebase at key:', key);
+
+  var database = admin.database().ref();
+
+  database.child('videos').child(key).set({ transcoding: true })
+  .then(function () {
+    console.log('ehllo hello');
+    callback(null, 'Video record saved to firebase')
+  }).catch(function (err) {
+    callback(err)
+  });
+}
+
 exports.handler = function (event, context, callback) {
-  console.log('Welcome');
+  context.callbackWaitsForEmptyEventLoop = false;
 
   var key = event.Records[0].s3.object.key;
 
-  //the input file may have spaces so replace them with '+'
   var sourceKey = decodeURIComponent(key.replace(/\+/g, ' '));
 
-  //remove the extension
-  const lastInx = sourceKey.lastIndexOf('.');
-  let outputKey = '';
-  let extension = '';
-  if (lastInx >= 0) {
-    outputKey = sourceKey.substring(0, lastInx);
-    extension = sourceKey.substring(lastInx + 1);
-  }
+  var outputKey = sourceKey.split('.')[0];
 
-  if (extension !== 'avi' && extension !== 'mp4' && extension !== 'mov') {
-    console.log('delete unsupported extension file');
-    var params = { Bucket: 'serverless-video-upload-hojin', Key: sourceKey };
-    s3.deleteObject(params, function (error, data) {
-      if (error) {
-        callback(error);
-      }
-    });
-  } else {
-    console.log('start transcoding file');
-    var params = {
-      PipelineId: '1541906639483-s56cjr',
-      Input: {
-        Key: sourceKey
-      },
-      Outputs: [
-        {
-          Key: outputKey + '-1080p' + '.mp4',
-          PresetId: '1351620000001-000001' //Generic 1080p
-        },
-        {
-          Key: outputKey + '-720p' + '.mp4',
-          PresetId: '1351620000001-000010' //Generic 720p
-        },
-        {
-          Key: outputKey + '-web-720p' + '.mp4',
-          PresetId: '1351620000001-100070' //Web Friendly 720p
-        }
-      ]
-    };
+  var uniqueVideoKey = outputKey.split('/')[0];
 
-    elasticTranscoder.createJob(params, function (error, data) {
-      if (error) {
-        callback(error);
+  var params = {
+    PipelineId: process.env.ELASTIC_TRANSCODER_PIPELINE_ID,
+    Input: {
+      Key: sourceKey
+    },
+    Outputs: [
+      {
+        Key: outputKey + '-720p' + '.mp4',
+        PresetId: '1351620000001-000010' //Generic 720p
       }
-    });
-  }
+    ]
+  };
+
+  elasticTranscoder.createJob(params, function (error, data) {
+    if (error) {
+      console.log('Error creating elastic transcoder job.');
+      callback(error);
+      return;
+    }
+
+    // the transcoding job started, so let's make a record in firebase
+    // that the UI can show right away
+    console.log('Elastic transcoder job created successfully');
+    pushVideoEntryToFirebase(uniqueVideoKey, callback);
+  });
 };

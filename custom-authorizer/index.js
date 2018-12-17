@@ -19,7 +19,8 @@ var generatePolicy = function (principalId, effect, resource) {
     var statementOne = {};
     statementOne.Action = 'execute-api:Invoke'; // default action
     statementOne.Effect = effect;
-    statementOne.Resource = resource;
+    // statementOne.Resource = resource;
+    statementOne.Resource = 'arn:aws:execute-api:ap-northeast-1:536772866969:24-hour-video/*/*/';
     policyDocument.Statement[0] = statementOne;
     authResponse.policyDocument = policyDocument;
   }

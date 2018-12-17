@@ -6,12 +6,11 @@
   "scripts": {
     "test": "AWS_PROFILE=study-lambda run-local-lambda --file index.js --event tests/event.json",
     "predeploy": "zip -r Lambda-Deployment.zip * -x *.zip *.json *.log",
-    "deploy": "aws lambda update-function-code --function-name arn:aws:lambda:ap-northeast-1:536772866969:function:transcode-video --zip-file fileb://Lambda-Deployment.zip --profile study-lambda"
+    "deploy": "aws lambda update-function-code --function-name transcode-video-firebase-update --zip-file fileb://Lambda-Deployment.zip --profile study-lambda"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "aws-sdk": "^2.353.0",
     "firebase-admin": "^6.4.0"
   },
   "devDependencies": {
